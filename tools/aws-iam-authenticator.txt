@@ -1,0 +1,10 @@
+https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html
+
+curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.5.9/aws-iam-authenticator_0.5.9_linux_amd64
+chmod a+x aws-iam-authenticator
+
+https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install

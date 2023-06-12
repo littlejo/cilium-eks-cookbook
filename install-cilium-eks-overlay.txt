@@ -1,0 +1,328 @@
+* eksctl (minimum version: 0.143.0)
+* kubectl
+* cilium cli
+* aws-iam-authenticator and aws cli
+* helm
+
+# Control plane installation
+
+export AWS_DEFAULT_REGION=us-east-1
+export AWS_ACCESS_KEY_ID="XXXXXXXXXXXXX"
+export AWS_SECRET_ACCESS_KEY="YYYYYYYYYYYYYYYYYYYYYY"
+
+> eksctl create cluster --name cilium-overlay --without-nodegroup --version 1.27
+
+# Node and Cilium installation
+
+kubectl -n kube-system patch daemonset aws-node --type='strategic' -p='{"spec":{"template":{"spec":{"nodeSelector":{"io.cilium/aws-node-enabled":"true"}}}}}'
+
+cat ./eks-cilium-overlay.yaml
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: cilium-overlay
+  region: us-east-1
+  version: "1.27"
+
+managedNodeGroups:
+- name: ng-1
+  instanceType: t3.medium
+  desiredCapacity: 2
+  # taint nodes so that application pods are
+  # not scheduled/executed until Cilium is deployed.
+  # Alternatively, see the note above regarding taint effects.
+  taints:
+   - key: "node.cilium.io/agent-not-ready"
+     value: "true"
+     effect: "NoExecute"
+
+eksctl create nodegroup -f ./eks-cilium-overlay.yaml
+
+when you see:
+
+kubectl get node
+NAME                             STATUS     ROLES    AGE     VERSION
+ip-192-168-11-230.ec2.internal   NotReady   <none>   8m12s   v1.27.1-eks-2f008fe
+ip-192-168-59-196.ec2.internal   NotReady   <none>   7m55s   v1.27.1-eks-2f008fe
+
+launch:
+
+helm repo add cilium https://helm.cilium.io/
+helm repo update
+helm install cilium cilium/cilium --version 1.13.3 \
+  --namespace kube-system \
+  --set egressMasqueradeInterfaces=eth0
+
+kubectl get node
+NAME                             STATUS   ROLES    AGE     VERSION
+ip-192-168-11-230.ec2.internal   Ready    <none>   8m41s   v1.27.1-eks-2f008fe
+ip-192-168-59-196.ec2.internal   Ready    <none>   8m24s   v1.27.1-eks-2f008fe
+
+# Test
+
+## Long
+cilium connectivity test
+
+## Short
+kubectl create ns cilium-test
+kubectl apply -n cilium-test -f https://raw.githubusercontent.com/cilium/cilium/v1.13/examples/kubernetes/connectivity-check/connectivity-check.yaml
+
+kubectl get pod -A -o wide
+NAMESPACE     NAME                                                     READY   STATUS    RESTARTS   AGE   IP              NODE                            NOMINATED NODE   READINESS GATES
+cilium-test   echo-a-6575c98b7d-th9ql                                  1/1     Running   0          32s   10.0.0.10       ip-192-168-9-0.ec2.internal     <none>           <none>
+cilium-test   echo-b-54b86d8976-vxsvl                                  1/1     Running   0          31s   10.0.1.169      ip-192-168-55-48.ec2.internal   <none>           <none>
+cilium-test   echo-b-host-54d5cc5fcd-qjlbs                             1/1     Running   0          31s   192.168.55.48   ip-192-168-55-48.ec2.internal   <none>           <none>
+cilium-test   host-to-b-multi-node-clusterip-846b574bbc-qj7zw          1/1     Running   0          29s   192.168.9.0     ip-192-168-9-0.ec2.internal     <none>           <none>
+cilium-test   host-to-b-multi-node-headless-5b4bf5459f-8lkzq           1/1     Running   0          29s   192.168.9.0     ip-192-168-9-0.ec2.internal     <none>           <none>
+cilium-test   pod-to-a-6578dd7fbf-8qbjd                                1/1     Running   0          31s   10.0.0.66       ip-192-168-9-0.ec2.internal     <none>           <none>
+cilium-test   pod-to-a-allowed-cnp-57fd79848c-9v9lf                    1/1     Running   0          30s   10.0.1.72       ip-192-168-55-48.ec2.internal   <none>           <none>
+cilium-test   pod-to-a-denied-cnp-d984d7757-2p6mk                      1/1     Running   0          31s   10.0.0.90       ip-192-168-9-0.ec2.internal     <none>           <none>
+cilium-test   pod-to-b-intra-node-nodeport-6654886dc9-g97j8            1/1     Running   0          29s   10.0.1.189      ip-192-168-55-48.ec2.internal   <none>           <none>
+cilium-test   pod-to-b-multi-node-clusterip-54847b87b9-6k22l           1/1     Running   0          30s   10.0.0.214      ip-192-168-9-0.ec2.internal     <none>           <none>
+cilium-test   pod-to-b-multi-node-headless-64b4d78855-bnqlz            1/1     Running   0          30s   10.0.0.193      ip-192-168-9-0.ec2.internal     <none>           <none>
+cilium-test   pod-to-b-multi-node-nodeport-64757f6d5f-8jj57            1/1     Running   0          29s   10.0.0.49       ip-192-168-9-0.ec2.internal     <none>           <none>
+cilium-test   pod-to-external-1111-76c448d975-k545p                    1/1     Running   0          31s   10.0.1.56       ip-192-168-55-48.ec2.internal   <none>           <none>
+cilium-test   pod-to-external-fqdn-allow-google-cnp-56c545c6b9-lzhrv   1/1     Running   0          30s   10.0.0.246      ip-192-168-9-0.ec2.internal     <none>           <none>
+kube-system   cilium-bg2rv                                             1/1     Running   0          14m   192.168.55.48   ip-192-168-55-48.ec2.internal   <none>           <none>
+kube-system   cilium-operator-85c44f5b6b-nn6qb                         1/1     Running   0          14m   192.168.9.0     ip-192-168-9-0.ec2.internal     <none>           <none>
+kube-system   cilium-operator-85c44f5b6b-zvf2q                         1/1     Running   0          14m   192.168.55.48   ip-192-168-55-48.ec2.internal   <none>           <none>
+kube-system   cilium-pp4ml                                             1/1     Running   0          14m   192.168.9.0     ip-192-168-9-0.ec2.internal     <none>           <none>
+kube-system   coredns-79df7fff65-5bmml                                 1/1     Running   0          45m   10.0.1.99       ip-192-168-55-48.ec2.internal   <none>           <none>
+kube-system   coredns-79df7fff65-j4mbh                                 1/1     Running   0          45m   10.0.0.180      ip-192-168-9-0.ec2.internal     <none>           <none>
+kube-system   kube-proxy-cqwqs                                         1/1     Running   0          16m   192.168.55.48   ip-192-168-55-48.ec2.internal   <none>           <none>
+kube-system   kube-proxy-pxgrr                                         1/1     Running   0          16m   192.168.9.0     ip-192-168-9-0.ec2.internal     <none>           <none>
+
+As you see pod (not created on daemonset) has range IPs is 10.0.0.0/16 and is different from range ips of vpc (192.168.0.0/16).
+
+# kube proxy replacement (optional)
+
+aws eks describe-cluster --name cilium-overlay | jq -r .cluster.endpoint
+https://FFAD61580FA9C55ED445DFE7825F1F5B.gr7.us-east-1.eks.amazonaws.com
+
+API_SERVER_IP=FFAD61580FA9C55ED445DFE7825F1F5B.gr7.us-east-1.eks.amazonaws.com
+API_SERVER_PORT=443
+helm upgrade cilium cilium/cilium --version 1.13.3 \
+    --namespace kube-system \
+    --reuse-values \
+    --set kubeProxyReplacement=strict \
+    --set k8sServiceHost=${API_SERVER_IP} \
+    --set k8sServicePort=${API_SERVER_PORT}
+
+# api gateway (optional)
+
+## Installation
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.5.1/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.5.1/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.5.1/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v0.5.1/config/crd/experimental/gateway.networking.k8s.io_referencegrants.yaml
+
+aws eks describe-cluster --name cilium-overlay | jq -r .cluster.endpoint
+https://FFAD61580FA9C55ED445DFE7825F1F5B.gr7.us-east-1.eks.amazonaws.com
+
+API_SERVER_IP=FFAD61580FA9C55ED445DFE7825F1F5B.gr7.us-east-1.eks.amazonaws.com
+API_SERVER_PORT=443
+helm upgrade cilium cilium/cilium \
+    --namespace kube-system \
+    --reuse-values \
+    --set gatewayAPI.enabled=true \
+    --set kubeProxyReplacement=strict \
+    --set k8sServiceHost=${API_SERVER_IP} \
+    --set k8sServicePort=${API_SERVER_PORT}
+
+cilium config view | grep "enable-gateway-api"
+enable-gateway-api                             true
+enable-gateway-api-secrets-sync                true
+
+kubectl get gatewayclasses.gateway.networking.k8s.io
+NAME     CONTROLLER                     ACCEPTED   AGE
+cilium   io.cilium/gateway-controller   True       74s
+
+## Test
+
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.12/samples/bookinfo/platform/kube/bookinfo.yaml
+
+kubectl get pods
+
+kubectl apply -f https://raw.githubusercontent.com/cilium/cilium/1.13.0/examples/kubernetes/gateway/basic-http.yaml
+
+kubectl get svc cilium-gateway-my-gateway
+NAME                        TYPE           CLUSTER-IP       EXTERNAL-IP                                                               PORT(S)        AGE
+cilium-gateway-my-gateway   LoadBalancer   10.100.135.116   a468d9fa9632a4e949cca8ad793cebdf-1957359626.us-east-1.elb.amazonaws.com   80:31256/TCP   16s
+
+kubectl get gateway
+NAME         CLASS    ADDRESS                                                                   READY   AGE
+my-gateway   cilium   a468d9fa9632a4e949cca8ad793cebdf-1957359626.us-east-1.elb.amazonaws.com   True    49s
+
+kubectl get httproute
+NAME         HOSTNAMES   AGE
+http-app-1               9m54s
+
+curl --fail -s http://$GATEWAY/details/1 | jq
+{
+  "id": 1,
+  "author": "William Shakespeare",
+  "year": 1595,
+  "type": "paperback",
+  "pages": 200,
+  "publisher": "PublisherA",
+  "language": "English",
+  "ISBN-10": "1234567890",
+  "ISBN-13": "123-1234567890"
+}
+
+# Cilium status
+
+root@bd99c3edc11c:/home/cloud_user# kubectl exec -it -n kube-system ds/cilium -- cilium status --verbose
+Defaulted container "cilium-agent" out of: cilium-agent, config (init), mount-cgroup (init), apply-sysctl-overwrites (init), mount-bpf-fs (init), clean-cilium-state (init), install-cni-binaries (init)
+KVStore:                Ok   Disabled
+Kubernetes:             Ok   1.27+ (v1.27.2-eks-c12679a) [linux/amd64]
+Kubernetes APIs:        ["cilium/v2::CiliumClusterwideEnvoyConfig", "cilium/v2::CiliumClusterwideNetworkPolicy", "cilium/v2::CiliumEndpoint", "cilium/v2::CiliumEnvoyConfig", "cilium/v2::CiliumNetworkPolicy", "cilium/v2::CiliumNode", "core/v1::Namespace", "core/v1::Node", "core/v1::Pods", "core/v1::Secrets", "core/v1::Service", "discovery/v1::EndpointSlice", "networking.k8s.io/v1::NetworkPolicy"]
+KubeProxyReplacement:   Strict   [eth0 192.168.9.0]
+Host firewall:          Disabled
+CNI Chaining:           none
+CNI Config file:        CNI configuration file management disabled
+Cilium:                 Ok   1.13.3 (v1.13.3-36cb0eed)
+NodeMonitor:            Listening for events on 2 CPUs with 64x4096 of shared memory
+Cilium health daemon:   Ok
+IPAM:                   IPv4: 12/254 allocated from 10.0.0.0/24,
+Allocated addresses:
+  10.0.0.10 (cilium-test/echo-a-6575c98b7d-th9ql[restored])
+  10.0.0.106 (health)
+  10.0.0.157 (default/productpage-v1-65b8499c86-tpfht)
+  10.0.0.180 (kube-system/coredns-79df7fff65-j4mbh[restored])
+  10.0.0.193 (cilium-test/pod-to-b-multi-node-headless-64b4d78855-bnqlz[restored])
+  10.0.0.214 (cilium-test/pod-to-b-multi-node-clusterip-54847b87b9-6k22l[restored])
+  10.0.0.246 (cilium-test/pod-to-external-fqdn-allow-google-cnp-56c545c6b9-lzhrv[restored])
+  10.0.0.41 (router)
+  10.0.0.49 (cilium-test/pod-to-b-multi-node-nodeport-64757f6d5f-8jj57[restored])
+  10.0.0.66 (cilium-test/pod-to-a-6578dd7fbf-8qbjd[restored])
+  10.0.0.85 (ingress)
+  10.0.0.90 (cilium-test/pod-to-a-denied-cnp-d984d7757-2p6mk[restored])
+IPv6 BIG TCP:           Disabled
+BandwidthManager:       Disabled
+Host Routing:           Legacy
+Masquerading:           IPTables [IPv4: Enabled, IPv6: Disabled]
+Clock Source for BPF:   ktime
+Controller Status:      63/63 healthy
+  Name                                          Last success   Last error   Count   Message
+  bpf-map-sync-cilium_lxc                       6s ago         never        0       no error
+  cilium-health-ep                              1m0s ago       never        0       no error
+  dns-garbage-collector-job                     13s ago        never        0       no error
+  endpoint-102-regeneration-recovery            never          never        0       no error
+  endpoint-1278-regeneration-recovery           never          never        0       no error
+  endpoint-1744-regeneration-recovery           never          never        0       no error
+  endpoint-1789-regeneration-recovery           never          never        0       no error
+  endpoint-266-regeneration-recovery            never          never        0       no error
+  endpoint-2697-regeneration-recovery           never          never        0       no error
+  endpoint-312-regeneration-recovery            never          never        0       no error
+  endpoint-3754-regeneration-recovery           never          never        0       no error
+  endpoint-4063-regeneration-recovery           never          never        0       no error
+  endpoint-749-regeneration-recovery            never          never        0       no error
+  endpoint-980-regeneration-recovery            never          never        0       no error
+  endpoint-gc                                   4m14s ago      never        0       no error
+  ipcache-inject-labels                         24m6s ago      24m12s ago   0       no error
+  k8s-heartbeat                                 14s ago        never        0       no error
+  link-cache                                    16s ago        never        0       no error
+  metricsmap-bpf-prom-sync                      3s ago         never        0       no error
+  resolve-identity-266                          2m2s ago       never        0       no error
+  resolve-identity-2697                         4m0s ago       never        0       no error
+  restoring-ep-identity (102)                   24m1s ago      never        0       no error
+  restoring-ep-identity (1278)                  24m1s ago      never        0       no error
+  restoring-ep-identity (1744)                  24m1s ago      never        0       no error
+  restoring-ep-identity (1789)                  24m1s ago      never        0       no error
+  restoring-ep-identity (312)                   24m1s ago      never        0       no error
+  restoring-ep-identity (3754)                  24m1s ago      never        0       no error
+  restoring-ep-identity (4063)                  24m1s ago      never        0       no error
+  restoring-ep-identity (749)                   24m1s ago      never        0       no error
+  restoring-ep-identity (980)                   24m1s ago      never        0       no error
+  sync-endpoints-and-host-ips                   1s ago         never        0       no error
+  sync-lb-maps-with-k8s-services                24m1s ago      never        0       no error
+  sync-policymap-102                            11s ago        never        0       no error
+  sync-policymap-1278                           11s ago        never        0       no error
+  sync-policymap-1744                           11s ago        never        0       no error
+  sync-policymap-1789                           11s ago        never        0       no error
+  sync-policymap-266                            11s ago        never        0       no error
+  sync-policymap-2697                           11s ago        never        0       no error
+  sync-policymap-312                            11s ago        never        0       no error
+  sync-policymap-3754                           11s ago        never        0       no error
+  sync-policymap-4063                           11s ago        never        0       no error
+  sync-policymap-749                            11s ago        never        0       no error
+  sync-policymap-980                            11s ago        never        0       no error
+  sync-to-k8s-ciliumendpoint (102)              1s ago         never        0       no error
+  sync-to-k8s-ciliumendpoint (1278)             1s ago         never        0       no error
+  sync-to-k8s-ciliumendpoint (1744)             1s ago         never        0       no error
+  sync-to-k8s-ciliumendpoint (1789)             1s ago         never        0       no error
+  sync-to-k8s-ciliumendpoint (266)              2s ago         never        0       no error
+  sync-to-k8s-ciliumendpoint (2697)             10s ago        never        0       no error
+  sync-to-k8s-ciliumendpoint (312)              1s ago         never        0       no error
+  sync-to-k8s-ciliumendpoint (3754)             1s ago         never        0       no error
+  sync-to-k8s-ciliumendpoint (4063)             1s ago         never        0       no error
+  sync-to-k8s-ciliumendpoint (749)              1s ago         never        0       no error
+  sync-to-k8s-ciliumendpoint (980)              1s ago         never        0       no error
+  template-dir-watcher                          never          never        0       no error
+  waiting-initial-global-identities-ep (1278)   24m1s ago      never        0       no error
+  waiting-initial-global-identities-ep (1744)   24m1s ago      never        0       no error
+  waiting-initial-global-identities-ep (1789)   24m1s ago      never        0       no error
+  waiting-initial-global-identities-ep (312)    24m1s ago      never        0       no error
+  waiting-initial-global-identities-ep (3754)   24m1s ago      never        0       no error
+  waiting-initial-global-identities-ep (4063)   24m1s ago      never        0       no error
+  waiting-initial-global-identities-ep (749)    24m1s ago      never        0       no error
+  waiting-initial-global-identities-ep (980)    24m1s ago      never        0       no error
+Proxy Status:   OK, ip 10.0.0.41, 4 redirects active on ports 10000-20000
+  Protocol            Redirect               Proxy Port
+  cilium-dns-egress   1278:egress:SCTP:53    35649
+  cilium-dns-egress   1278:egress:TCP:53     35649
+  cilium-dns-egress   1278:egress:UDP:53     35649
+  cilium-dns-egress   1278:egress:UDP:5353   35649
+Global Identity Range:   min 256, max 65535
+Hubble:                  Ok   Current/Max Flows: 4095/4095 (100.00%), Flows/s: 29.02   Metrics: Disabled
+KubeProxyReplacement Details:
+  Status:                 Strict
+  Socket LB:              Enabled
+  Socket LB Tracing:      Enabled
+  Socket LB Coverage:     Full
+  Devices:                eth0 192.168.9.0
+  Mode:                   SNAT
+  Backend Selection:      Random
+  Session Affinity:       Enabled
+  Graceful Termination:   Enabled
+  NAT46/64 Support:       Disabled
+  XDP Acceleration:       Disabled
+  Services:
+  - ClusterIP:      Enabled
+  - NodePort:       Enabled (Range: 30000-32767)
+  - LoadBalancer:   Enabled
+  - externalIPs:    Enabled
+  - HostPort:       Enabled
+BPF Maps:   dynamic sizing: on (ratio: 0.002500)
+  Name                          Size
+  Non-TCP connection tracking   65536
+  TCP connection tracking       131072
+  Endpoint policy               65535
+  Events                        2
+  IP cache                      512000
+  IP masquerading agent         16384
+  IPv4 fragmentation            8192
+  IPv4 service                  65536
+  IPv6 service                  65536
+  IPv4 service backend          65536
+  IPv6 service backend          65536
+  IPv4 service reverse NAT      65536
+  IPv6 service reverse NAT      65536
+  Metrics                       1024
+  NAT                           131072
+  Neighbor table                131072
+  Global policy                 16384
+  Per endpoint policy           65536
+  Session affinity              65536
+  Signal                        2
+  Sockmap                       65535
+  Sock reverse NAT              65536
+  Tunnel                        65536
+Encryption:                                 Disabled
+Cluster health:                             2/2 reachable   (2023-06-12T09:19:49Z)
+  Name                                      IP              Node        Endpoints
+  ip-192-168-9-0.ec2.internal (localhost)   192.168.9.0     reachable   reachable
+  ip-192-168-55-48.ec2.internal             192.168.55.48   reachable   reachable

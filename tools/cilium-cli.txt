@@ -1,0 +1,5 @@
+https://github.com/cilium/cilium-cli/releases
+
+curl -sLO "https://github.com/cilium/cilium-cli/releases/download/v0.14.6/cilium-linux-amd64.tar.gz"
+tar xvf cilium-linux-amd64.tar.gz 
+mv cilium /usr/local/bin/
