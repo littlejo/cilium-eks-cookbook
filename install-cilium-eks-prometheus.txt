@@ -1,0 +1,84 @@
+* eksctl (minimum version: 0.143.0)
+* kubectl
+* cilium cli
+* aws-iam-authenticator
+* helm
+
+# Cluster installation
+
+export AWS_DEFAULT_REGION=us-east-1
+export AWS_ACCESS_KEY_ID="XXXXXX"
+export AWS_SECRET_ACCESS_KEY="YYYYYYYYYYYYYYYYY"
+
+eks-cilium.yaml:
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: basic-cilium
+  region: us-east-1
+  version: "1.27"
+
+managedNodeGroups:
+- name: ng-1
+  instanceType: t3.medium
+  # taint nodes so that application pods are
+  # not scheduled/executed until Cilium is deployed.
+  # Alternatively, see the note above regarding taint effects.
+  taints:
+   - key: "node.cilium.io/agent-not-ready"
+     value: "true"
+     effect: "NoExecute"
+
+> eksctl create cluster -f ./eks-cilium.yaml
+
+
+> kubectl get node
+NAME                             STATUS   ROLES    AGE     VERSION
+ip-192-168-11-135.ec2.internal   Ready    <none>   4m18s   v1.27.1-eks-2f008fe
+ip-192-168-56-129.ec2.internal   Ready    <none>   4m22s   v1.27.1-eks-2f008fe
+
+# Cilium installation
+
+kubectl -n kube-system patch daemonset aws-node --type='strategic' -p='{"spec":{"template":{"spec":{"nodeSelector":{"io.cilium/aws-node-enabled":"true"}}}}}'
+
+
+helm repo add cilium https://helm.cilium.io/
+helm install cilium cilium/cilium --namespace kube-system \
+                                  --set eni.enabled=true \
+                                  --set ipam.mode=eni \
+                                  --set egressMasqueradeInterfaces=eth0 \
+                                  --set tunnel=disabled \
+                                  --set prometheus.enabled=true \
+                                  --set operator.prometheus.enabled=true
+
+kubectl get pod -n kube-system --selector k8s-app=cilium -o json | jq '.items[0].metadata.annotations'
+{
+  "container.apparmor.security.beta.kubernetes.io/apply-sysctl-overwrites": "unconfined",
+  "container.apparmor.security.beta.kubernetes.io/cilium-agent": "unconfined",
+  "container.apparmor.security.beta.kubernetes.io/clean-cilium-state": "unconfined",
+  "container.apparmor.security.beta.kubernetes.io/mount-cgroup": "unconfined",
+  "prometheus.io/port": "9962",
+  "prometheus.io/scrape": "true"
+}
+
+# Hubble
+
+To use metrics from hubble:
+
+helm upgrade cilium cilium/cilium --namespace kube-system --reuse-values --set hubble.enabled=true --set hubble.metrics.enabled="{dns,drop:sourceContext=pod;destinationContext=pod,tcp,flow,port-distribution,httpV2}"
+kubectl rollout restart daemonset/cilium -n kube-system
+
+# Prometheus and Grafana
+
+To see this metrics on grafana:
+
+kubectl apply -f https://raw.githubusercontent.com/cilium/cilium/v1.13/examples/kubernetes/addons/prometheus/monitoring-example.yaml
+kubectl -n cilium-monitoring port-forward service/grafana --address 0.0.0.0 --address :: 3000:3000
+
+http://localhost:3000
+
+# Example of test
+
+kubectl apply -f https://raw.githubusercontent.com/cilium/cilium/v1.13/examples/minikube/http-sw-app.yaml
+kubectl apply -f https://raw.githubusercontent.com/cilium/cilium/v1.13/examples/minikube/sw_l3_l4_l7_policy.yaml
