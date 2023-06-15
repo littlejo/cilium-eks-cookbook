@@ -1,3 +1,5 @@
+# Requirements
+
 * eksctl (minimum version: 0.143.0)
 * kubectl
 * cilium cli
@@ -13,7 +15,7 @@ export AWS_SECRET_ACCESS_KEY="CHANGEME"
 
 > source ./files/env
 
-```eks-cilium.yaml:
+```yaml:
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
@@ -34,7 +36,7 @@ managedNodeGroups:
      effect: "NoExecute"
 ```
 
-> eksctl create cluster -f .files/eks-cilium.yaml
+> eksctl create cluster -f ./files/eks-cilium.yaml
 
 > kubectl get node
 ```
