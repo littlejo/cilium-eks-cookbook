@@ -117,6 +117,7 @@ kubectl run -it --image=alpine -- check
 If you don't see a command prompt, try pressing enter.
 / # wget 192.168.124.214
 Connecting to 192.168.124.214 (192.168.124.214:80)
+wget: can't connect to remote host (192.168.124.214): Operation timed out
 
 ## security group egress access
 
