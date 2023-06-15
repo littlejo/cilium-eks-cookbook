@@ -1,0 +1,5 @@
+
+VERSION=1.5.0
+curl -o terraform.zip -sL0 https://releases.hashicorp.com/terraform/$VERSION/terraform_${VERSION}_linux_amd64.zip
+unzip terraform.zip
+mv terraform /usr/local/bin

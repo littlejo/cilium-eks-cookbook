@@ -1,0 +1,12 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: egress-default
+  namespace: default
+spec:
+  egress:
+    - toGroups:
+        - aws:
+            securityGroupsIds:
+              - TOCHANGE
+  endpointSelector: {}
