@@ -1,6 +1,11 @@
+# Use case
+
+* Install eks clusters
+* Install cilium on eks clusters
+
 # Requirements
 
-* eksctl (minimum version: 0.143.0)
+* eksctl (tested version: 0.143.0)
 * kubectl
 * cilium cli
 * aws-iam-authenticator
