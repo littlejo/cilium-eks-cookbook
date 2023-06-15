@@ -56,7 +56,7 @@ kubectl rollout restart daemonset/cilium -n kube-system
 
 # Prometheus and Grafana
 
-To see this metrics on grafana:
+To install prometheus and to see this metrics on grafana:
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/cilium/cilium/v1.13/examples/kubernetes/addons/prometheus/monitoring-example.yaml
