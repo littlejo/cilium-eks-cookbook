@@ -5,11 +5,13 @@
 
 # Cluster installation
 
+```
 export AWS_DEFAULT_REGION=us-east-1
 export AWS_ACCESS_KEY_ID="XXXXXXXXXXXXX"
 export AWS_SECRET_ACCESS_KEY="YYYYYYYYYYYYYYYYYYYYYY"
+```
 
-eks-cilium.yaml:
+```eks-cilium.yaml:
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
@@ -28,18 +30,21 @@ managedNodeGroups:
    - key: "node.cilium.io/agent-not-ready"
      value: "true"
      effect: "NoExecute"
+```
 
 > eksctl create cluster -f ./eks-cilium.yaml
 
-
 > kubectl get node
+```
 NAME                             STATUS   ROLES    AGE     VERSION
 ip-192-168-11-135.ec2.internal   Ready    <none>   4m18s   v1.27.1-eks-2f008fe
 ip-192-168-56-129.ec2.internal   Ready    <none>   4m22s   v1.27.1-eks-2f008fe
+```
 
 # Cilium installation
 
 > cilium install
+```
 🔮 Auto-detected Kubernetes kind: EKS
 ℹ️  Using Cilium version 1.13.3
 🔮 Auto-detected cluster name: basic-cilium-us-east-1-eksctl-io
@@ -57,8 +62,11 @@ ip-192-168-56-129.ec2.internal   Ready    <none>   4m22s   v1.27.1-eks-2f008fe
 🚀 Creating Operator Deployment...
 ⌛ Waiting for Cilium to be installed and ready...
 ✅ Cilium was successfully installed! Run 'cilium status' to view installation health
+```
 
 > cilium status --wait
+
+```
     /¯¯\
  /¯¯\__/¯¯\    Cilium:             OK
  \__/¯¯\__/    Operator:           OK
@@ -73,5 +81,6 @@ Containers:       cilium-operator    Running: 1
 Cluster Pods:     2/2 managed by Cilium
 Image versions    cilium             quay.io/cilium/cilium:v1.13.3@sha256:77176464a1e11ea7e89e984ac7db365e7af39851507e94f137dcf56c87746314: 2
                   cilium-operator    quay.io/cilium/operator-aws:v1.13.3@sha256:394c40d156235d3c2004f77bb73402457092351cc6debdbc5727ba36fbd863ae: 1
+```
 
 > cilium connectivity test
