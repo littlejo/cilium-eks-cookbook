@@ -6,10 +6,12 @@
 # Cluster installation
 
 ```
-export AWS_DEFAULT_REGION=us-east-1
-export AWS_ACCESS_KEY_ID="XXXXXXXXXXXXX"
-export AWS_SECRET_ACCESS_KEY="YYYYYYYYYYYYYYYYYYYYYY"
+export AWS_DEFAULT_REGION=ch-ange-1
+export AWS_ACCESS_KEY_ID="CHANGEME"
+export AWS_SECRET_ACCESS_KEY="CHANGEME"
 ```
+
+> source ./files/env
 
 ```eks-cilium.yaml:
 apiVersion: eksctl.io/v1alpha5
@@ -32,7 +34,7 @@ managedNodeGroups:
      effect: "NoExecute"
 ```
 
-> eksctl create cluster -f ./eks-cilium.yaml
+> eksctl create cluster -f .files/eks-cilium.yaml
 
 > kubectl get node
 ```
