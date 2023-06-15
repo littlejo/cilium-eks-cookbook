@@ -1,4 +1,12 @@
-* eksctl (minimum version: 0.143.0)
+# Use case
+
+* Install eks clusters
+* Install cilium on eks clusters
+* Create a "link" between security group and network policy
+
+# Requirements
+
+* eksctl (tested version: 0.143.0)
 * kubectl
 * cilium cli
 * aws-iam-authenticator
@@ -6,11 +14,15 @@
 
 # Cluster installation
 
-export AWS_DEFAULT_REGION=us-east-1
-export AWS_ACCESS_KEY_ID="XXXXXXXXXXXXX"
-export AWS_SECRET_ACCESS_KEY="YYYYYYYYYYYYYYYYYYYYYY"
+```
+export AWS_DEFAULT_REGION=ch-ange-1
+export AWS_ACCESS_KEY_ID="CHANGEME"
+export AWS_SECRET_ACCESS_KEY="CHANGEME"
+```
 
-eks-cilium.yaml:
+> source ./files/env
+
+```yaml:
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
@@ -29,18 +41,21 @@ managedNodeGroups:
    - key: "node.cilium.io/agent-not-ready"
      value: "true"
      effect: "NoExecute"
+```
 
-> eksctl create cluster -f ./eks-cilium.yaml
-
+> eksctl create cluster -f ./files/eks-cilium.yaml
 
 > kubectl get node
+```
 NAME                             STATUS   ROLES    AGE     VERSION
 ip-192-168-11-135.ec2.internal   Ready    <none>   4m18s   v1.27.1-eks-2f008fe
 ip-192-168-56-129.ec2.internal   Ready    <none>   4m22s   v1.27.1-eks-2f008fe
+```
 
 # Cilium installation
 
 > cilium install
+```
 🔮 Auto-detected Kubernetes kind: EKS
 ℹ️  Using Cilium version 1.13.3
 🔮 Auto-detected cluster name: basic-cilium-us-east-1-eksctl-io
@@ -58,8 +73,11 @@ ip-192-168-56-129.ec2.internal   Ready    <none>   4m22s   v1.27.1-eks-2f008fe
 🚀 Creating Operator Deployment...
 ⌛ Waiting for Cilium to be installed and ready...
 ✅ Cilium was successfully installed! Run 'cilium status' to view installation health
+```
 
 > cilium status --wait
+
+```
     /¯¯\
  /¯¯\__/¯¯\    Cilium:             OK
  \__/¯¯\__/    Operator:           OK
@@ -74,25 +92,33 @@ Containers:       cilium-operator    Running: 1
 Cluster Pods:     2/2 managed by Cilium
 Image versions    cilium             quay.io/cilium/cilium:v1.13.3@sha256:77176464a1e11ea7e89e984ac7db365e7af39851507e94f137dcf56c87746314: 2
                   cilium-operator    quay.io/cilium/operator-aws:v1.13.3@sha256:394c40d156235d3c2004f77bb73402457092351cc6debdbc5727ba36fbd863ae: 1
+```
+
+# Test
 
 > cilium connectivity test
 
 # Create EC2 with nginx installed and security group
 
+I used terraform for that:
+
+```
 cd files/
 terraform init
+[...]
 terraform apply
-
+[...]
 Outputs:
 
 private_ip = "192.168.124.214"
 security_group_id = "sg-0ce5e337befa5e3eb"
+```
 
 # Create network policy
 
 ## Deny all
 
-files/np-deny-all.yaml:
+```
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -105,23 +131,29 @@ spec:
     - Egress
   ingress: []
   egress: []
-kubectl apply -f np-deny-all.yaml
+```
 
-kubectl get networkpolicy
+> kubectl apply -f np-deny-all.yaml
+
+> kubectl get networkpolicy
+```
 NAME       POD-SELECTOR   AGE
 deny-all   <none>         2m22s
+```
 
 ### Test
 
+```
 kubectl run -it --image=alpine -- check
 If you don't see a command prompt, try pressing enter.
 / # wget 192.168.124.214
 Connecting to 192.168.124.214 (192.168.124.214:80)
 wget: can't connect to remote host (192.168.124.214): Operation timed out
+```
 
 ## security group egress access
 
-cnp-securitygroup.yaml:
+```
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -134,20 +166,26 @@ spec:
             securityGroupsIds:
               - sg-0ce5e337befa5e3eb
   endpointSelector: {}
+```
 
 * change sg-0ce5e337befa5e3eb by your own security group id
 
-kubectl apply -f cnp-securitygroup.yaml
+```
+kubectl apply -f files/cnp-securitygroup.yaml
+```
 
 you see the network policy and the derivative policy:
 
+```
 kubectl get cnp
 NAME                                                           AGE
 egress-default                                                 3s
 egress-default-togroups-b698c313-8f61-4f49-8d8a-0268259707b4   2s
+```
 
 * you refind the good egress ip (192.168.124.214):
 
+```
 kubectl describe cnp egress-default-togroups-b698c313-8f61-4f49-8d8a-0268259707b4
 Name:         egress-default-togroups-b698c313-8f61-4f49-8d8a-0268259707b4
 Namespace:    default
@@ -187,9 +225,11 @@ Specs:
     Source:  k8s
     Value:   b698c313-8f61-4f49-8d8a-0268259707b4
 Events:      <none>
+```
 
 ### Check
 
+```
 kubectl run -it --image=alpine -- work
 If you don't see a command prompt, try pressing enter.
 / # wget 192.168.124.214
@@ -197,3 +237,4 @@ Connecting to 192.168.124.214 (192.168.124.214:80)
 saving to 'index.html'
 index.html           100% |****************************************************************************************************************************************************|   615  0:00:00 ETA
 'index.html' saved
+```
