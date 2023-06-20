@@ -1,7 +1,6 @@
 # Use case
 
-* Install eks clusters
-* Install cilium on eks clusters
+* Install dev version of cilium on eks clusters
 
 # Requirements
 
