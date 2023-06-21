@@ -18,10 +18,10 @@ export AWS_ACCESS_KEY_ID="CHANGEME"
 export AWS_SECRET_ACCESS_KEY="CHANGEME"
 ```
 
-git clone https://github.com/littlejo/terraform-eks-cilium.git
-cd terraform-eks-cilium
+> git clone https://github.com/littlejo/terraform-eks-cilium.git
+> cd terraform-eks-cilium
 
-modify variables.tf
+* modify variables.tf
 
 In particularly, if you want another azs:
 
@@ -35,7 +35,7 @@ variable "azs" {
 
 > terraform init
 > terraform apply
-=> yes
+> => yes
 
 Type to update kubeconfig:
 > aws eks update-kubeconfig --name terraform-cilium --kubeconfig ~/.kube/config
