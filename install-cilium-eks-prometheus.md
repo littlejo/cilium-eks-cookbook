@@ -12,7 +12,7 @@
 
 # Cluster installation
 
-exactly the same as install-cilium-eks.md
+exactly the same as [install-cilium-eks.md](install-cilium-eks.md)
 
 # Cilium installation
 
