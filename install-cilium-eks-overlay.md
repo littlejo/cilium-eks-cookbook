@@ -1,7 +1,6 @@
 # Use case
 
-* Install cilium on eks clusters using IPv6 instead of IPv4
-* Doesn't support eni (https://github.com/cilium/cilium/issues/18405)
+* Install cilium on eks clusters with overlay network instead of aws eni network
 
 # Requirements
 
