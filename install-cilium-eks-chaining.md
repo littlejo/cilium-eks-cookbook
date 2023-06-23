@@ -1,7 +1,6 @@
 # Use case
 
-* Install eks clusters
-* Install cilium on eks clusters
+* You don't want to remove vpc cni but you want to use cilium network policy on eks clusters
 
 # Requirements
 
