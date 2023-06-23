@@ -12,13 +12,19 @@
 
 # Cluster installation
 
-exactly the same as [install-cilium-eks.md](install-cilium-eks.md)
+exactly the same as [install-cilium-eks.md](install-cilium-eks.md#cluster-installation)
 
 # Cilium installation
 
-> kubectl -n kube-system delete ds kube-proxy
-> kubectl -n kube-system delete cm kube-proxy
-> kubectl -n kube-system patch daemonset aws-node --type='strategic' -p='{"spec":{"template":{"spec":{"nodeSelector":{"io.cilium/aws-node-enabled":"true"}}}}}'
+## Patch
+
+```
+kubectl -n kube-system delete ds kube-proxy
+kubectl -n kube-system delete cm kube-proxy
+kubectl -n kube-system patch daemonset aws-node --type='strategic' -p='{"spec":{"template":{"spec":{"nodeSelector":{"io.cilium/aws-node-enabled":"true"}}}}}'
+```
+
+## Find eks endpoint and install
 
 ```
 aws eks describe-cluster --name basic-cilium | jq -r .cluster.endpoint
@@ -57,8 +63,12 @@ Image versions    cilium             quay.io/cilium/cilium:v1.13.4@sha256:bde880
                   cilium-operator    quay.io/cilium/operator-aws:v1.13.4@sha256:c6bde19bbfe1483577f9ef375ff6de19402ac20277c451fe05729fcb9bc02a84: 2
 ```
 
+## Check
+
+```
 kubectl -n kube-system exec ds/cilium -- cilium status | grep KubeProxyReplacement
 KubeProxyReplacement:                          Strict   [eth0 192.168.27.176 (Direct Routing), eth1 192.168.18.89]
+```
 
 # Test
 
