@@ -5,10 +5,10 @@
 
 # Requirements
 
-* terraform
-* aws cli
-* kubectl
-* cilium cli
+* [terraform](tools/terraform.txt)
+* [kubectl](tools/kubectl.txt)
+* [cilium cli](tools/cilium-cli.txt)
+* [aws-iam-authenticator](tools/aws-iam-authenticator.txt)
 
 # All installation
 

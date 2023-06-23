@@ -5,11 +5,11 @@
 
 # Requirements
 
-* eksctl (tested version: 0.143.0)
-* kubectl
-* cilium cli
-* aws-iam-authenticator
-* terraform
+* [eksctl (tested version: 0.143.0)](tools/eksctl.txt)
+* [kubectl](tools/kubectl.txt)
+* [cilium cli](tools/cilium-cli.txt)
+* [aws-iam-authenticator](tools/aws-iam-authenticator.txt)
+* [terraform](tools/terraform.txt)
 
 # Cluster installation
 
