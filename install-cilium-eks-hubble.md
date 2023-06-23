@@ -1,8 +1,7 @@
 # Use case
 
-* Install eks clusters
-* Install cilium on eks clusters
-* Install hubble to observe the network
+* Install cilium and hubble to observe the network
+* ipam mode: eni
 
 # Requirements
 

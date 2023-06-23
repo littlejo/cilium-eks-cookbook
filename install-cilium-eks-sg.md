@@ -1,8 +1,7 @@
 # Use case
 
-* Install eks clusters
-* Install cilium on eks clusters
-* Create a "link" between security group and network policy
+* Create a "link" between security group and network policy using cilium
+* ipam mode: eni
 
 # Requirements
 
