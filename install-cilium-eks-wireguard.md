@@ -18,6 +18,29 @@ exactly the same as [install-cilium-eks.md](install-cilium-eks.md)
 > cilium install --encryption wireguard
 
 ```
+🔮 Auto-detected Kubernetes kind: EKS
+ℹ️  Using Cilium version 1.13.3
+🔮 Auto-detected cluster name: basic-cilium-us-east-1-eksctl-io
+ℹ️  L7 proxy disabled due to Wireguard encryption
+🔮 Auto-detected datapath mode: aws-eni
+🔮 Auto-detected kube-proxy has been installed
+ℹ️  L7 proxy disabled due to Wireguard encryption
+🔥 Patching the "aws-node" DaemonSet to evict its pods...
+ℹ️  L7 proxy disabled due to Wireguard encryption
+ℹ️  helm template --namespace kube-system cilium cilium/cilium --version 1.13.3 --set cluster.id=0,cluster.name=basic-cilium-us-east-1-eksctl-io,egressMasqueradeInterfaces=eth0,encryption.enabled=true,encryption.nodeEncryption=false,encryption.type=wireguard,eni.enabled=true,ipam.mode=eni,kubeProxyReplacement=disabled,l7Proxy=false,operator.replicas=1,serviceAccounts.cilium.name=cilium,serviceAccounts.operator.name=cilium-operator,tunnel=disabled
+ℹ️  Storing helm values file in kube-system/cilium-cli-helm-values Secret
+🔑 Created CA in secret cilium-ca
+🔑 Generating certificates for Hubble...
+🚀 Creating Service accounts...
+🚀 Creating Cluster roles...
+🚀 Creating ConfigMap for Cilium version 1.13.3...
+🚀 Creating Agent DaemonSet...
+🚀 Creating Operator Deployment...
+⌛ Waiting for Cilium to be installed and ready...
+✅ Cilium was successfully installed! Run 'cilium status' to view installation health
+```
+
+```
 cilium status --wait
     /¯¯\
  /¯¯\__/¯¯\    Cilium:             OK
