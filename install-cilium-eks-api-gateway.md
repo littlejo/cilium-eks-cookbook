@@ -134,6 +134,7 @@ aws elb describe-load-balancers | jq .LoadBalancerDescriptions[].DNSName
 ```
 
 By default it creates a classic load balancer which is deprecated. How to create an alb or a nlb and its options?
+More information: https://github.com/cilium/cilium/issues/25357
 
 # Test
 
