@@ -1,7 +1,6 @@
 # Use case
 
-* Install cilium on eks clusters with kube-proxy free
-* ipam mode: eni
+* Install cilium and api gateway on eks clusters
 
 # Requirements
 
@@ -134,7 +133,7 @@ aws elb describe-load-balancers | jq .LoadBalancerDescriptions[].DNSName
 "abe9a5b2820814677afd5b280b49909f-827090963.us-east-1.elb.amazonaws.com"
 ```
 
-By default it creates a classic load balancer which is deprecated. How to create an alb or a nlb and its options ?
+By default it creates a classic load balancer which is deprecated. How to create an alb or a nlb and its options?
 
 # Test
 
