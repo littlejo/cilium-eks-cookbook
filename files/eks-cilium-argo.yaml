@@ -1,0 +1,17 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: argo-cilium
+  region: us-east-1
+  version: "1.27"
+
+managedNodeGroups:
+- name: ng-1
+  instanceType: t3.medium
+  taints:
+   - key: "node.cilium.io/agent-not-ready"
+     value: "true"
+     effect: "NoExecute"
+- name: ng-2
+  instanceType: t3.medium

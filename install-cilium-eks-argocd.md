@@ -40,11 +40,12 @@ managedNodeGroups:
   instanceType: t3.medium
 ```
 
+* ng-2 is for argocd deployment
+
 > eksctl create cluster -f ./files/eks-cilium-argo.yaml
 
 > kubectl get node
 ```
-kubectl get node
 NAME                             STATUS   ROLES    AGE     VERSION
 ip-192-168-13-125.ec2.internal   Ready    <none>   3m34s   v1.27.1-eks-2f008fe
 ip-192-168-13-211.ec2.internal   Ready    <none>   3m55s   v1.27.1-eks-2f008fe
@@ -85,7 +86,7 @@ spec:
       selfHeal: true
 ```
 
-> kubectl apply -f argo.yaml -n argocd
+> kubectl apply -f files/cilium-argocd.yaml -n argocd
 
 
 > eksctl delete nodegroup ng-2 --cluster argo-cilium
