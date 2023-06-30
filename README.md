@@ -21,6 +21,7 @@ This is a cookbook of installing cilium on eks on different use cases. I tried t
 * [Quickstart to install cilium on eks using ipsec](install-cilium-eks-ipsec.md)
 * [Quickstart to install cilium on eks using eni prefix delegation](install-cilium-eks-prefix.md)
 * [Quickstart to install cilium on eks without kube-proxy](install-cilium-eks-kube-proxy-free.md)
+* [Quickstart to install cilium on eks using clustermesh](install-cilium-eks-clustermesh.md)
 
 # Different networking add-ons
 
