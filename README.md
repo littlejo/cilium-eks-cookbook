@@ -9,6 +9,7 @@ This is a cookbook of installing cilium on eks on different use cases. I tried t
 # Different ways for the deployment
 
 * [Quickstart to install cilium on eks with Terraform](install-cilium-eks-terraform.md)
+* [Quickstart to install cilium on eks with Helm](install-cilium-eks-helm.md)
 * [Quickstart to install cilium on eks with ArgoCD](install-cilium-eks-argocd.md)
 
 
