@@ -11,50 +11,18 @@
 
 # Cluster installation
 
-```
-export AWS_DEFAULT_REGION=ch-ange-1
-export AWS_ACCESS_KEY_ID="CHANGEME"
-export AWS_SECRET_ACCESS_KEY="CHANGEME"
-```
-
-> source ./files/env
-
-```yaml:
-apiVersion: eksctl.io/v1alpha5
-kind: ClusterConfig
-
-metadata:
-  name: basic-cilium
-  region: us-east-1
-  version: "1.27"
-
-managedNodeGroups:
-- name: ng-1
-  instanceType: t3.medium
-  # taint nodes so that application pods are
-  # not scheduled/executed until Cilium is deployed.
-  # Alternatively, see the note above regarding taint effects.
-  taints:
-   - key: "node.cilium.io/agent-not-ready"
-     value: "true"
-     effect: "NoExecute"
-```
-
-> eksctl create cluster -f ./files/eks-cilium.yaml
-
-> kubectl get node
-```
-NAME                             STATUS   ROLES    AGE     VERSION
-ip-192-168-11-135.ec2.internal   Ready    <none>   4m18s   v1.27.1-eks-2f008fe
-ip-192-168-56-129.ec2.internal   Ready    <none>   4m22s   v1.27.1-eks-2f008fe
-```
+exactly the same as [install-cilium-eks.md](install-cilium-eks.md#cluster-installation)
 
 # Cilium installation
 
-Version of vpc cni: v1.11.2 >
+Version of vpc cni (minimum): v1.11.2
 
-> kubectl -n kube-system get ds/aws-node -o json | jq -r '.spec.template.spec.containers[0].image'
-602401143452.dkr.ecr.us-east-1.amazonaws.com/amazon-k8s-cni:v1.12.6-eksbuild.2
+How to see:
+
+```
+kubectl -n kube-system get ds/aws-node -o json | jq -r '.spec.template.spec.containers[0].image'
+XXXXXXXXXXX.dkr.ecr.us-east-1.amazonaws.com/amazon-k8s-cni:v1.12.6-eksbuild.2
+```
 
 ```
 helm repo add cilium https://helm.cilium.io/
