@@ -19,6 +19,8 @@ exactly the same as [install-cilium-eks.md](install-cilium-eks.md#cluster-instal
 
 > kubectl -n kube-system patch daemonset aws-node --type='strategic' -p='{"spec":{"template":{"spec":{"nodeSelector":{"io.cilium/aws-node-enabled":"true"}}}}}'
 ```
+helm repo add cilium https://helm.cilium.io/
+helm repo update
 helm install cilium cilium/cilium --version 1.13.4 \
   --namespace kube-system \
   --set eni.enabled=true \
