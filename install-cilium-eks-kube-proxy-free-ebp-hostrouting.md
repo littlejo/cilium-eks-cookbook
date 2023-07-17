@@ -71,16 +71,20 @@ kubectl -n kube-system exec ds/cilium -- cilium status | grep KubeProxyReplaceme
 KubeProxyReplacement:                          Strict   [eth0 192.168.27.176 (Direct Routing), eth1 192.168.18.89]
 ```
 
-kubectl get cm -n kube-system cilium-config -o yaml > cilium-config-origin.yaml
+* I backup the configmap:
 
-kubectl delete -f cilium-config-origin.yaml
+```
+kubectl get cm -n kube-system cilium-config -o yaml > cilium-config-origin.yaml
+```
+
+* I apply this the configmap:
 
 ```
 apiVersion: v1
 data:
-  devices: "eth+"
-  enable-bpf-masquerade: "true"
-  ipv4-native-routing-cidr: "192.168.0.0/16"
+  devices: "eth+"  ### ADD
+  enable-bpf-masquerade: "true" ### ADD
+  ipv4-native-routing-cidr: "192.168.0.0/16"  ### ADD
   agent-not-ready-taint-key: node.cilium.io/agent-not-ready
   arping-refresh-period: 30s
   auto-create-cilium-node-resource: "true"
@@ -106,7 +110,7 @@ data:
   enable-bgp-control-plane: "false"
   enable-bpf-clock-probe: "true"
   enable-endpoint-health-checking: "true"
-  enable-endpoint-routes: "false"
+  enable-endpoint-routes: "false" ### CHANGE
   enable-health-check-nodeport: "true"
   enable-health-checking: "true"
   enable-hubble: "true"
@@ -114,7 +118,7 @@ data:
   enable-ipv4-masquerade: "true"
   enable-ipv6: "false"
   enable-ipv6-big-tcp: "false"
-  enable-ipv6-masquerade: "false"
+  enable-ipv6-masquerade: "false" ### CHANGE
   enable-k8s-terminating-endpoint: "true"
   enable-l2-neigh-discovery: "true"
   enable-l7-proxy: "true"
@@ -181,7 +185,8 @@ metadata:
 ```
 
 ```
-kubectl delete -f cilium-config.yaml
+kubectl delete -f cilium-config-origin.yaml
+kubectl apply -f cilium-config.yaml
 ```
 
 # Test
