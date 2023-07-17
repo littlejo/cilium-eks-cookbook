@@ -189,6 +189,12 @@ kubectl delete -f cilium-config-origin.yaml
 kubectl apply -f cilium-config.yaml
 ```
 
+```
+kubectl rollout -n kube-system restart ds/cilium
+kubectl rollout restart deployment -n kube-system coredns
+kubectl rollout restart deployment -n kube-system cilium-operator
+```
+
 # Test
 
 > cilium connectivity test
