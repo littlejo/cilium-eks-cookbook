@@ -198,3 +198,47 @@ kubectl rollout restart deployment -n kube-system cilium-operator
 # Test
 
 > cilium connectivity test
+
+```
+📋 Test Report
+❌ 9/42 tests failed (29/304 actions), 12 tests skipped, 0 scenarios skipped:
+Test [no-policies]:
+  ❌ no-policies/pod-to-host/ping-ipv4-1: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> 3.234.144.72 (3.234.144.72:0)
+  ❌ no-policies/pod-to-host/ping-ipv4-7: cilium-test/client-6965d549d5-spvkn (192.168.31.107) -> 3.234.144.72 (3.234.144.72:0)
+Test [allow-all-except-world]:
+  ❌ allow-all-except-world/pod-to-service/curl-3: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> cilium-test/echo-same-node (echo-same-node:8080)
+  ❌ allow-all-except-world/pod-to-host/ping-ipv4-1: cilium-test/client-6965d549d5-spvkn (192.168.31.107) -> 3.234.144.72 (3.234.144.72:0)
+  ❌ allow-all-except-world/pod-to-host/ping-ipv4-5: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> 3.234.144.72 (3.234.144.72:0)
+Test [host-entity]:
+  ❌ host-entity/pod-to-host/ping-ipv4-1: cilium-test/client-6965d549d5-spvkn (192.168.31.107) -> 3.234.144.72 (3.234.144.72:0)
+  ❌ host-entity/pod-to-host/ping-ipv4-5: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> 3.234.144.72 (3.234.144.72:0)
+Test [echo-ingress-l7]:
+  ❌ echo-ingress-l7/pod-to-pod-with-endpoints/curl-ipv4-2-public: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-2-public (192.168.60.196:8080)
+  ❌ echo-ingress-l7/pod-to-pod-with-endpoints/curl-ipv4-2-privatewith-header: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-2-privatewith-header (192.168.60.196:8080)
+  ❌ echo-ingress-l7/pod-to-pod-with-endpoints/curl-ipv4-3-public: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-3-public (192.168.30.226:8080)
+  ❌ echo-ingress-l7/pod-to-pod-with-endpoints/curl-ipv4-3-privatewith-header: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-3-privatewith-header (192.168.30.226:8080)
+Test [echo-ingress-l7-named-port]:
+  ❌ echo-ingress-l7-named-port/pod-to-pod-with-endpoints/curl-ipv4-2-public: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-2-public (192.168.60.196:8080)
+  ❌ echo-ingress-l7-named-port/pod-to-pod-with-endpoints/curl-ipv4-2-privatewith-header: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-2-privatewith-header (192.168.60.196:8080)
+  ❌ echo-ingress-l7-named-port/pod-to-pod-with-endpoints/curl-ipv4-3-public: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-3-public (192.168.30.226:8080)
+  ❌ echo-ingress-l7-named-port/pod-to-pod-with-endpoints/curl-ipv4-3-privatewith-header: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-3-privatewith-header (192.168.30.226:8080)
+Test [client-egress-l7-method]:
+  ❌ client-egress-l7-method/pod-to-pod-with-endpoints/curl-ipv4-1-public: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-1-public (192.168.30.226:8080)
+  ❌ client-egress-l7-method/pod-to-pod-with-endpoints/curl-ipv4-1-private: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-1-private (192.168.30.226:8080)
+  ❌ client-egress-l7-method/pod-to-pod-with-endpoints/curl-ipv4-1-privatewith-header: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-1-privatewith-header (192.168.30.226:8080)
+  ❌ client-egress-l7-method/pod-to-pod-with-endpoints/curl-ipv4-1-public: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-1-public (192.168.60.196:8080)
+  ❌ client-egress-l7-method/pod-to-pod-with-endpoints/curl-ipv4-1-private: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-1-private (192.168.60.196:8080)
+  ❌ client-egress-l7-method/pod-to-pod-with-endpoints/curl-ipv4-1-privatewith-header: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> curl-ipv4-1-privatewith-header (192.168.60.196:8080)
+Test [client-egress-l7]:
+  ❌ client-egress-l7/pod-to-pod/curl-ipv4-2: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> cilium-test/echo-other-node-66bdd89578-tngkj (192.168.60.196:8080)
+  ❌ client-egress-l7/pod-to-pod/curl-ipv4-3: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> cilium-test/echo-same-node-55db76dd44-bl58x (192.168.30.226:8080)
+  ❌ client-egress-l7/pod-to-world/http-to-one.one.one.one-1: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> one.one.one.one-http (one.one.one.one:80)
+Test [client-egress-l7-named-port]:
+  ❌ client-egress-l7-named-port/pod-to-pod/curl-ipv4-2: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> cilium-test/echo-same-node-55db76dd44-bl58x (192.168.30.226:8080)
+  ❌ client-egress-l7-named-port/pod-to-pod/curl-ipv4-3: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> cilium-test/echo-other-node-66bdd89578-tngkj (192.168.60.196:8080)
+  ❌ client-egress-l7-named-port/pod-to-world/http-to-one.one.one.one-0: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> one.one.one.one-http (one.one.one.one:80)
+Test [to-fqdns]:
+  ❌ to-fqdns/pod-to-world/http-to-one.one.one.one-0: cilium-test/client-6965d549d5-spvkn (192.168.31.107) -> one.one.one.one-http (one.one.one.one:80)
+  ❌ to-fqdns/pod-to-world/http-to-one.one.one.one-1: cilium-test/client2-76f4d7c5bc-pzsh2 (192.168.23.111) -> one.one.one.one-http (one.one.one.one:80)
+connectivity test failed: 9 tests failed
+```
