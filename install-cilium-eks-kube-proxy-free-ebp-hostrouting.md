@@ -14,6 +14,8 @@
 
 exactly the same as [install-cilium-eks.md](install-cilium-eks.md#cluster-installation)
 
++ Add all access to sg into nodes
+
 # Cilium installation
 
 ## Patch
