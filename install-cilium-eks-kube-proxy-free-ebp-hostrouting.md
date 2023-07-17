@@ -64,7 +64,7 @@ Image versions    cilium             quay.io/cilium/cilium:v1.13.4@sha256:bde880
                   cilium-operator    quay.io/cilium/operator-aws:v1.13.4@sha256:c6bde19bbfe1483577f9ef375ff6de19402ac20277c451fe05729fcb9bc02a84: 2
 ```
 
-## Check
+## Workaround
 
 ```
 kubectl -n kube-system exec ds/cilium -- cilium status | grep KubeProxyReplacement
