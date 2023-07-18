@@ -31,4 +31,7 @@ This is a cookbook of installing cilium on eks on different use cases. I tried t
 * [Quickstart to install cilium and hubble on eks](install-cilium-eks-hubble.md)
 * [Quickstart to install cilium and use security group with network policy on eks](install-cilium-eks-sg.md)
 
+# Related article
+
+* [(FRENCH) Mon été avec Cilium et EKS](https://medium.com/@littel.jo/mon-%C3%A9t%C3%A9-avec-cilium-et-eks-partie-1-99a66ed6671f)
 
