@@ -34,6 +34,15 @@ ip-192-168-11-230.ec2.internal   Ready    <none>   8m41s   v1.27.1-eks-2f008fe
 ip-192-168-59-196.ec2.internal   Ready    <none>   8m24s   v1.27.1-eks-2f008fe
 ```
 
+On ec2 instance, clean this iptables rules:
+
+```
+iptables -t nat -F AWS-SNAT-CHAIN-0
+iptables -t nat -F AWS-SNAT-CHAIN-1
+iptables -t nat -F AWS-CONNMARK-CHAIN-0
+iptables -t nat -F AWS-CONNMARK-CHAIN-1
+```
+
 # Test
 
 ## Long
