@@ -80,7 +80,7 @@ Image versions    cilium             quay.io/cilium/cilium:v1.13.4@sha256:bde880
 ## Test
 
 
-> hubble ...
+> cilium hubble port-forward&
 
 ```
 kubectl exec -it ds/cilium -n kube-system -c cilium-agent -- cilium status
